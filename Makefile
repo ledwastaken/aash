@@ -2,15 +2,14 @@ NAME = aash
 SRC = src/main.rs
 
 RUSTC = rustc
+DEBUG_FLAGS = -C debuginfo=2
 
-all: $(NAME)
+all: debug
 
-$(NAME): $(SRC)
-	$(RUSTC) $(SRC) -o $(NAME)
+debug:
+	$(RUSTC) $(DEBUG_FLAGS) $(SRC) -o $(NAME)
 
 clean:
 	rm -f $(NAME)
 
-re: clean all
-
-.PHONY: all clean re
+.PHONY: all clean
