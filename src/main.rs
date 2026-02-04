@@ -43,6 +43,4 @@ pub fn parse_execute_loop<R: Read>(src: &mut R) {
             Ast::Eof => break,
         }
     }
-
-    println!("Hello, world!");
 }
