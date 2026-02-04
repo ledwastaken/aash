@@ -1,3 +1,7 @@
+pub mod token;
+
+pub use self::token::Token;
+
 pub struct Lexer {
     // FIXME
 }
