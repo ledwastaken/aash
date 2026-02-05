@@ -9,7 +9,8 @@ use std::io::{Cursor, Read};
 use ast::Ast;
 use exec::execute_simple_command;
 use lexer::Lexer;
-use parser::parse_input;
+
+use crate::lexer::Token;
 
 fn main() {
     let mut args = std::env::args();
@@ -31,16 +32,14 @@ fn main() {
 }
 
 pub fn parse_execute_loop<R: Read>(src: &mut R) {
-    let mut lexer = Lexer::new();
+    let mut lexer = Lexer::new(src);
+    let mut token = lexer.peek();
 
-    let ast = parse_input(lexer);
-
-    loop {
-        match ast {
-            Ast::SimpleCommand(ref simple_command) => {
-                execute_simple_command(simple_command);
-            }
-            Ast::Eof => break,
-        }
+    while *token != Token::Eof {
+        println!("{:?}", token);
+        lexer.pop();
+        token = lexer.peek();
     }
+
+    println!("{:?}", token);
 }
