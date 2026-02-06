@@ -1,17 +1,20 @@
-use std::io::Read;
+use std::io::{Bytes, Read};
 
 pub mod token;
 
 pub use self::token::Token;
 
 pub struct Lexer<R: Read> {
-    src: R,
+    src: Bytes<R>,
     current: Option<Token>,
 }
 
 impl<R: Read> Lexer<R> {
     pub fn new(src: R) -> Self {
-        Lexer { src, current: None }
+        Lexer {
+            src: src.bytes(),
+            current: None,
+        }
     }
 
     pub fn peek(&mut self) -> &Token {
