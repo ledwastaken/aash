@@ -6,30 +6,29 @@ pub use self::token::Token;
 
 pub struct Lexer<R: Read> {
     src: Bytes<R>,
-    current: Option<Token>,
+    current: Token,
 }
 
 impl<R: Read> Lexer<R> {
     pub fn new(src: R) -> Self {
+        let bytes = src.bytes();
+        let token = process_next_token(&bytes);
+
         Lexer {
-            src: src.bytes(),
-            current: None,
+            src: bytes,
+            current: token,
         }
     }
 
     pub fn peek(&mut self) -> &Token {
-        if self.current.is_none() {
-            self.process_next_token();
-        }
-
-        self.current.as_ref().unwrap()
+        &self.current
     }
 
     pub fn pop(&mut self) {
-        self.current = None;
+        self.current = process_next_token(&self.src);
     }
+}
 
-    fn process_next_token(&mut self) {
-        self.current = Some(Token::Eof); // FIXME
-    }
+fn process_next_token<R: Read>(bytes: &Bytes<R>) -> Token {
+    Token::Eof // FIXME
 }
