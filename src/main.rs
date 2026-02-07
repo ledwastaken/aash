@@ -25,7 +25,13 @@ fn main() {
                     std::process::exit(2);
                 }
             },
-            _ => parse_execute_loop(&mut File::open(arg).unwrap()),
+            _ => match File::open(&arg) {
+                Ok(mut src) => parse_execute_loop(&mut src),
+                _ => {
+                    eprintln!("{}: {}: No such file or directory", program_name, arg);
+                    std::process::exit(127);
+                }
+            },
         },
         None => parse_execute_loop(&mut std::io::stdin()),
     }
