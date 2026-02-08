@@ -38,7 +38,7 @@ fn main() {
 }
 
 pub fn parse_execute_loop<R: Read>(src: &mut R) {
-    let mut lexer = Lexer::new(src);
+    let mut lexer = Lexer::new(src).unwrap();
     let mut token = lexer.peek();
 
     while *token != Token::Eof {
