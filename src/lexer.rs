@@ -1,42 +1,41 @@
-use std::io::{Bytes, Error, Read};
+use std::io::{self, Bytes, Read};
 
 pub mod token;
 
 pub use self::token::Token;
 
 pub struct Lexer<R: Read> {
-    src: Bytes<R>,
+    stream: Bytes<R>,
     current: Token,
 }
 
 impl<R: Read> Lexer<R> {
-    pub fn new(src: R) -> Result<Self, Error> {
-        let mut bytes = src.bytes();
-        let token = process_next_token(&mut bytes)?;
+    pub fn new(mut stream: Bytes<R>) -> io::Result<Self> {
+        let token = process_next_token(&mut stream)?;
 
         Ok(Lexer {
-            src: bytes,
+            stream,
             current: token,
         })
     }
 
-    pub fn peek(&mut self) -> &Token {
+    pub fn peek(&self) -> &Token {
         &self.current
     }
 
-    pub fn pop(&mut self) -> Result<(), Error> {
-        self.current = process_next_token(&mut self.src)?;
+    pub fn pop(&mut self) -> io::Result<()> {
+        self.current = process_next_token(&mut self.stream)?;
         Ok(())
     }
 }
 
-fn process_next_token<R: Read>(bytes: &mut Bytes<R>) -> Result<Token, Error> {
-    let mut token = String::new();
-    let mut single_quote = false;
-    let mut double_quote = false;
+fn process_next_token<R: Read>(bytes: &mut Bytes<R>) -> io::Result<Token> {
+    // let mut token = String::new();
+    // let mut single_quote = false;
+    // let mut double_quote = false;
 
-    while let Some(value) = bytes.next() {
-        // FIXME
+    while let Some(Ok(value)) = bytes.next() {
+        print!("{}", value as char);
     }
 
     Ok(Token::Eof)

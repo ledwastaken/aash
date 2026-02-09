@@ -2,6 +2,10 @@ use std::env::Args;
 use std::fs::File;
 use std::io::{self, Bytes, Cursor, Read};
 
+use crate::lexer::{Lexer, Token};
+
+mod lexer;
+
 fn main() {
     let mut args = std::env::args();
     let program_name = args.next().unwrap_or("aash".to_string());
@@ -38,10 +42,13 @@ fn handle_file_input(filename: &str, program_name: &str) -> io::Result<()> {
     }
 }
 
-fn parse_execute_loop<R: Read>(mut stream: Bytes<R>) -> io::Result<()> {
-    while let Some(Ok(byte)) = stream.next() {
-        print!("{}", byte as char);
+fn parse_execute_loop<R: Read>(stream: Bytes<R>) -> io::Result<()> {
+    let mut lexer = Lexer::new(stream)?;
+
+    // TODO parser
+    while *lexer.peek() != Token::Eof {
+        lexer.pop()?;
     }
 
-    Ok(()) // TODO
+    Ok(())
 }
