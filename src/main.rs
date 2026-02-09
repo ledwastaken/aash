@@ -30,7 +30,7 @@ fn handle_command_flag(mut args: Args, program_name: &str) -> io::Result<()> {
 
 fn handle_file_input(filename: &str, program_name: &str) -> io::Result<()> {
     match File::open(filename) {
-        Ok(mut file) => parse_execute_loop(file.bytes()),
+        Ok(file) => parse_execute_loop(file.bytes()),
         Err(_) => {
             eprintln!("{program_name}: {filename}: No such file or directory");
             std::process::exit(127);
@@ -38,6 +38,10 @@ fn handle_file_input(filename: &str, program_name: &str) -> io::Result<()> {
     }
 }
 
-fn parse_execute_loop<R: Read>(stream: Bytes<R>) -> io::Result<()> {
+fn parse_execute_loop<R: Read>(mut stream: Bytes<R>) -> io::Result<()> {
+    while let Some(Ok(byte)) = stream.next() {
+        print!("{}", byte as char);
+    }
+
     Ok(()) // TODO
 }
