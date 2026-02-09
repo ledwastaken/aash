@@ -1,51 +1,30 @@
-mod ast;
-mod exec;
-mod lexer;
-mod parser;
-
-use std::fs::File;
-use std::io::{Cursor, Read};
-
-use ast::Ast;
-use exec::execute_simple_command;
-use lexer::Lexer;
-
-use crate::lexer::Token;
+use std::env::Args;
+use std::io::{self, Bytes, Read};
 
 fn main() {
     let mut args = std::env::args();
-    let program_name = args.next().unwrap();
+    let program_name = args.next().unwrap_or("aash".to_string());
 
-    match args.next() {
-        Some(arg) => match arg.as_str() {
-            "-c" => match args.next() {
-                Some(src) => parse_execute_loop(&mut Cursor::new(src)),
-                None => {
-                    eprintln!("{}: -c: option requires an argument", program_name);
-                    std::process::exit(2);
-                }
-            },
-            _ => match File::open(&arg) {
-                Ok(mut src) => parse_execute_loop(&mut src),
-                _ => {
-                    eprintln!("{}: {}: No such file or directory", program_name, arg);
-                    std::process::exit(127);
-                }
-            },
-        },
-        None => parse_execute_loop(&mut std::io::stdin()),
+    let result = match args.next() {
+        Some(arg) if arg == "-c" => handle_command_flag(args, &program_name),
+        Some(filename) => handle_file_input(&filename, &program_name),
+        None => parse_execute_loop(io::stdin().bytes()),
+    };
+
+    if let Err(err) = result {
+        eprintln!("{program_name}: error: {err}");
+        std::process::exit(1);
     }
 }
 
-pub fn parse_execute_loop<R: Read>(src: &mut R) {
-    let mut lexer = Lexer::new(src).unwrap();
-    let mut token = lexer.peek();
+fn handle_command_flag(mut args: Args, program_name: &str) -> io::Result<()> {
+    Ok(()) // TODO
+}
 
-    while *token != Token::Eof {
-        println!("{:?}", token);
-        lexer.pop();
-        token = lexer.peek();
-    }
+fn handle_file_input(filename: &str, program_name: &str) -> io::Result<()> {
+    Ok(()) // TODO
+}
 
-    println!("{:?}", token);
+fn parse_execute_loop<R: Read>(stream: Bytes<R>) -> io::Result<()> {
+    Ok(()) // TODO
 }
