@@ -1,4 +1,5 @@
 use std::env::Args;
+use std::fs::File;
 use std::io::{self, Bytes, Cursor, Read};
 
 fn main() {
@@ -28,7 +29,13 @@ fn handle_command_flag(mut args: Args, program_name: &str) -> io::Result<()> {
 }
 
 fn handle_file_input(filename: &str, program_name: &str) -> io::Result<()> {
-    Ok(()) // TODO
+    match File::open(filename) {
+        Ok(mut file) => parse_execute_loop(file.bytes()),
+        Err(_) => {
+            eprintln!("{program_name}: {filename}: No such file or directory");
+            std::process::exit(127);
+        }
+    }
 }
 
 fn parse_execute_loop<R: Read>(stream: Bytes<R>) -> io::Result<()> {
