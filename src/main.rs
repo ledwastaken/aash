@@ -1,5 +1,5 @@
 use std::env::Args;
-use std::io::{self, Bytes, Read};
+use std::io::{self, Bytes, Cursor, Read};
 
 fn main() {
     let mut args = std::env::args();
@@ -18,7 +18,13 @@ fn main() {
 }
 
 fn handle_command_flag(mut args: Args, program_name: &str) -> io::Result<()> {
-    Ok(()) // TODO
+    match args.next() {
+        Some(src) => parse_execute_loop(Cursor::new(src).bytes()),
+        None => {
+            eprintln!("{program_name}: -c: option requires an argument");
+            std::process::exit(2);
+        }
+    }
 }
 
 fn handle_file_input(filename: &str, program_name: &str) -> io::Result<()> {
