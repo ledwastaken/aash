@@ -38,7 +38,12 @@ fn process_next_token<R: Read>(bytes: &mut Peekable<Bytes<R>>) -> io::Result<Tok
 
     while let Some(Ok(value)) = bytes.peek() {
         if *value as char == '\n' {
-            return Ok(Token::Newline);
+            if token.is_empty() {
+                bytes.next();
+                return Ok(Token::Newline);
+            } else {
+                return Ok(Token::Word(token));
+            }
         } else if (*value as char).is_whitespace() {
             if !token.is_empty() {
                 return Ok(Token::Word(token));
