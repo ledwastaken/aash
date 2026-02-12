@@ -35,7 +35,9 @@ fn process_next_token<R: Read>(bytes: &mut Bytes<R>) -> io::Result<Token> {
     // let mut double_quote = false;
 
     while let Some(Ok(value)) = bytes.next() {
-        if (value as char).is_whitespace() {
+        if value as char == '\n' {
+            return Ok(Token::Newline);
+        } else if (value as char).is_whitespace() {
             if !token.is_empty() {
                 return Ok(Token::Word(token));
             }

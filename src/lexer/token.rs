@@ -9,7 +9,7 @@ pub enum Token {
 
     // // Symbols
     // Semicolon, // ;
-    // Newline,   // \n
+    Newline,   // \n
     // Quote,     // '
 
     // Identifiers / literals
