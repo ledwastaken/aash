@@ -44,11 +44,18 @@ fn handle_file_input(filename: &str, program_name: &str) -> io::Result<()> {
 
 fn parse_execute_loop<R: Read>(stream: Bytes<R>) -> io::Result<()> {
     let mut lexer = Lexer::new(stream)?;
+    let mut token = lexer.peek();
+
+    print!("{:?}", token);
 
     // TODO parser
-    while *lexer.peek() != Token::Eof {
+    while *token != Token::Eof {
         lexer.pop()?;
+        token = lexer.peek();
+        print!(" {:?}", token);
     }
+
+    println!("");
 
     Ok(())
 }

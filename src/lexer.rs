@@ -30,13 +30,23 @@ impl<R: Read> Lexer<R> {
 }
 
 fn process_next_token<R: Read>(bytes: &mut Bytes<R>) -> io::Result<Token> {
-    // let mut token = String::new();
+    let mut token = String::new();
     // let mut single_quote = false;
     // let mut double_quote = false;
 
     while let Some(Ok(value)) = bytes.next() {
-        print!("{}", value as char);
+        if (value as char).is_whitespace() {
+            if !token.is_empty() {
+                return Ok(Token::Word(token));
+            }
+        } else {
+            token.push(value as char);
+        }
     }
 
-    Ok(Token::Eof)
+    if !token.is_empty() {
+        Ok(Token::Word(token))
+    } else {
+        Ok(Token::Eof)
+    }
 }

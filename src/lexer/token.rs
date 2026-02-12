@@ -12,8 +12,8 @@ pub enum Token {
     // Newline,   // \n
     // Quote,     // '
 
-    // // Identifiers / literals
-    // Word(String),
+    // Identifiers / literals
+    Word(String),
 
     // End of input (very useful for parsers)
     Eof,
