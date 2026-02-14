@@ -3,8 +3,11 @@ use std::fs::File;
 use std::io::{self, Cursor, Read};
 
 use crate::lexer::{Lexer, Token};
+use crate::parser::parse_input;
 
+mod ast;
 mod lexer;
+mod parser;
 
 fn main() {
     let mut args = std::env::args();
@@ -44,18 +47,10 @@ fn handle_file_input(filename: &str, program_name: &str) -> io::Result<()> {
 
 fn parse_execute_loop<R: Read>(reader: R) -> io::Result<()> {
     let mut lexer = Lexer::new(reader)?;
-    let mut token = lexer.peek();
 
-    print!("{:?}", token);
-
-    // TODO parser
-    while *token != Token::Eof {
-        lexer.pop()?;
-        token = lexer.peek();
-        print!(" {:?}", token);
+    while let Some(ast) = parse_input(&mut lexer) {
+        // TODO exec
     }
-
-    println!("");
 
     Ok(())
 }
