@@ -1,18 +1,17 @@
 use std::io::{Bytes, Read};
-use std::iter::Peekable;
 
 pub mod token;
 
 pub use self::token::Token;
 
 pub struct Lexer<R: Read> {
-    stream: Peekable<Bytes<R>>,
+    stream: Bytes<R>,
     next_token: Option<Token>,
 }
 
 impl<R: Read> Lexer<R> {
     pub fn new(reader: R) -> Self {
-        let stream = reader.bytes().peekable();
+        let stream = reader.bytes();
 
         Lexer {
             stream,
@@ -24,36 +23,37 @@ impl<R: Read> Lexer<R> {
         if let Some(token) = self.next_token.take() {
             token
         } else {
-            process_next_token(&mut self.stream)
+            self.process_next_token()
         }
     }
-}
 
-fn process_next_token<R: Read>(bytes: &mut Peekable<Bytes<R>>) -> Token {
-    let mut token = String::new();
+    fn process_next_token(&mut self) -> Token {
+        let mut token = String::new();
 
-    while let Some(Ok(value)) = bytes.peek() {
-        if *value as char == '\n' {
-            if token.is_empty() {
-                bytes.next();
-                return Token::Newline;
-            } else {
-                return Token::Word(token);
+        // TODO: handle io::Error
+        while let Some(Ok(value)) = self.stream.next() {
+            match value as char {
+                '\n' => {
+                    if token.is_empty() {
+                        return Token::Newline;
+                    } else {
+                        self.next_token = Some(Token::Newline);
+                        return Token::Word(token);
+                    }
+                }
+                ch if ch.is_whitespace() => {
+                    if !token.is_empty() {
+                        return Token::Word(token);
+                    }
+                }
+                ch => token.push(ch),
             }
-        } else if (*value as char).is_whitespace() {
-            if !token.is_empty() {
-                return Token::Word(token);
-            }
+        }
+
+        if !token.is_empty() {
+            Token::Word(token)
         } else {
-            token.push(*value as char);
+            Token::Eof
         }
-
-        bytes.next();
-    }
-
-    if !token.is_empty() {
-        Token::Word(token)
-    } else {
-        Token::Eof
     }
 }
