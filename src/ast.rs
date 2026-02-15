@@ -1,5 +1,5 @@
 #[derive(Debug)]
 pub enum Ast {
-    SimpleCommand { words: Vec<String> },
+    SimpleCommand { program: String, args: Vec<String> },
     None,
 }

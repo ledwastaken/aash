@@ -1,5 +1,14 @@
-use crate::ast::SimpleCommand;
+use std::process::Command;
 
-pub fn execute_simple_command(simple_command: &SimpleCommand) {
-    // FIXME
+use crate::ast::Ast;
+
+pub fn execute_ast(ast: Ast) {
+    match ast {
+        Ast::SimpleCommand { program, args } => execute_simple_command(program, args),
+        Ast::None => (),
+    }
+}
+
+fn execute_simple_command(program: String, args: Vec<String>) {
+    let _ = Command::new(program).args(args).spawn();
 }

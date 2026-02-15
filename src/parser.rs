@@ -40,7 +40,7 @@ fn parse_command<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
 fn parse_simple_command<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
     match token {
         Token::Word(word) => {
-            let mut words = vec![word];
+            let mut words = Vec::new();
             let mut token = lexer.next();
 
             while let Token::Word(next_word) = token {
@@ -48,7 +48,10 @@ fn parse_simple_command<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseRes
                 token = lexer.next();
             }
 
-            ParseResult::Success(Ast::SimpleCommand { words })
+            ParseResult::Success(Ast::SimpleCommand {
+                program: word,
+                args: words,
+            })
         }
         token => ParseResult::UnexpectedToken(token),
     }
