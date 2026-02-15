@@ -2,7 +2,7 @@ use std::env::Args;
 use std::fs::File;
 use std::io::{self, Cursor, Read};
 
-use crate::lexer::{Lexer, Token};
+use crate::lexer::Lexer;
 use crate::parser::parse_input;
 
 mod ast;
@@ -46,9 +46,9 @@ fn handle_file_input(filename: &str, program_name: &str) -> io::Result<()> {
 }
 
 fn parse_execute_loop<R: Read>(reader: R) -> io::Result<()> {
-    let mut lexer = Lexer::new(reader)?;
+    let mut lexer = Lexer::new(reader);
 
-    while let Some(ast) = parse_input(&mut lexer) {
+    while let Some(_ast) = parse_input(&mut lexer) {
         // TODO exec
     }
 

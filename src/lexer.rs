@@ -1,4 +1,4 @@
-use std::io::{self, Bytes, Read};
+use std::io::{Bytes, Read};
 use std::iter::Peekable;
 
 pub mod token;
@@ -7,46 +7,42 @@ pub use self::token::Token;
 
 pub struct Lexer<R: Read> {
     stream: Peekable<Bytes<R>>,
-    current: Token,
+    next_token: Option<Token>,
 }
 
 impl<R: Read> Lexer<R> {
-    pub fn new(reader: R) -> io::Result<Self> {
-        let mut stream = reader.bytes().peekable();
-        let token = process_next_token(&mut stream)?;
+    pub fn new(reader: R) -> Self {
+        let stream = reader.bytes().peekable();
 
-        Ok(Lexer {
+        Lexer {
             stream,
-            current: token,
-        })
+            next_token: None,
+        }
     }
 
-    pub fn peek(&self) -> &Token {
-        &self.current
-    }
-
-    pub fn pop(&mut self) -> io::Result<()> {
-        self.current = process_next_token(&mut self.stream)?;
-        Ok(())
+    pub fn next(&mut self) -> Token {
+        if let Some(token) = self.next_token.take() {
+            token
+        } else {
+            process_next_token(&mut self.stream)
+        }
     }
 }
 
-fn process_next_token<R: Read>(bytes: &mut Peekable<Bytes<R>>) -> io::Result<Token> {
+fn process_next_token<R: Read>(bytes: &mut Peekable<Bytes<R>>) -> Token {
     let mut token = String::new();
-    // let mut single_quote = false;
-    // let mut double_quote = false;
 
     while let Some(Ok(value)) = bytes.peek() {
         if *value as char == '\n' {
             if token.is_empty() {
                 bytes.next();
-                return Ok(Token::Newline);
+                return Token::Newline;
             } else {
-                return Ok(Token::Word(token));
+                return Token::Word(token);
             }
         } else if (*value as char).is_whitespace() {
             if !token.is_empty() {
-                return Ok(Token::Word(token));
+                return Token::Word(token);
             }
         } else {
             token.push(*value as char);
@@ -56,8 +52,8 @@ fn process_next_token<R: Read>(bytes: &mut Peekable<Bytes<R>>) -> io::Result<Tok
     }
 
     if !token.is_empty() {
-        Ok(Token::Word(token))
+        Token::Word(token)
     } else {
-        Ok(Token::Eof)
+        Token::Eof
     }
 }
