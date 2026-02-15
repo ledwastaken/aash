@@ -1,4 +1,4 @@
 #[derive(Debug)]
 pub struct SimpleCommand {
-    // FIXME
+    pub words: Vec<String>,
 }
