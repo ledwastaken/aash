@@ -16,4 +16,4 @@ release:
 clean:
 	rm -f $(NAME)
 
-.PHONY: all clean
+.PHONY: all debug release clean
