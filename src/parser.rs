@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use crate::ast::{self, Ast, simple_command};
+use crate::ast::Ast;
 use crate::lexer::{Lexer, Token};
 
 enum ParseResult {
@@ -48,9 +48,7 @@ fn parse_simple_command<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseRes
                 token = lexer.next();
             }
 
-            let simple_command = ast::SimpleCommand { words };
-
-            ParseResult::Success(Ast::SimpleCommand(simple_command))
+            ParseResult::Success(Ast::SimpleCommand { words })
         }
         token => ParseResult::UnexpectedToken(token),
     }
