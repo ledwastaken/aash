@@ -8,7 +8,7 @@ pub enum Token {
     // Fi,
 
     // // Symbols
-    // Semicolon, // ;
+    Semicolon, // ;
     Newline,   // \n
     // Quote,     // '
 

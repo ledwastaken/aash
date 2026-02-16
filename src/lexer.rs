@@ -41,6 +41,14 @@ impl<R: Read> Lexer<R> {
                         return Token::Word(token);
                     }
                 }
+                ';' => {
+                    if token.is_empty() {
+                        return Token::Semicolon;
+                    } else {
+                        self.next_token = Some(Token::Semicolon);
+                        return Token::Word(token);
+                    }
+                }
                 ch if ch.is_whitespace() => {
                     if !token.is_empty() {
                         return Token::Word(token);
