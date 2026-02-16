@@ -4,7 +4,7 @@ use crate::ast::Ast;
 use crate::lexer::{Lexer, Token};
 
 enum ParseResult {
-    Success(Ast),
+    Success(Ast, Token),
     UnexpectedToken(Token),
 }
 
@@ -15,8 +15,16 @@ pub fn parse_input<R: Read>(lexer: &mut Lexer<R>) -> Option<Ast> {
         Token::Eof => None,
         Token::Newline => Some(Ast::None),
         token => match parse_list(lexer, token) {
-            ParseResult::Success(ast) => Some(ast),
-            ParseResult::UnexpectedToken(_) => Some(Ast::None), // TODO handle parse error
+            ParseResult::Success(ast, Token::Eof) => Some(ast),
+            ParseResult::Success(ast, Token::Newline) => Some(ast),
+            ParseResult::Success(_, unexpected_token) => {
+                eprintln!("Unexpected token: {:?}", unexpected_token);
+                Some(Ast::None)
+            }
+            ParseResult::UnexpectedToken(unexpected_token) => {
+                eprintln!("Unexpected token: {:?}", unexpected_token);
+                Some(Ast::None)
+            }
         },
     }
 }
@@ -48,10 +56,13 @@ fn parse_simple_command<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseRes
                 token = lexer.next();
             }
 
-            ParseResult::Success(Ast::SimpleCommand {
-                program: word,
-                args: words,
-            })
+            ParseResult::Success(
+                Ast::SimpleCommand {
+                    program: word,
+                    args: words,
+                },
+                token,
+            )
         }
         token => ParseResult::UnexpectedToken(token),
     }
