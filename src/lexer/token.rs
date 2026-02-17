@@ -1,11 +1,11 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Token {
     // // Keywords
-    // If,
-    // Then,
-    // Elif,
-    // Else,
-    // Fi,
+    If,
+    Then,
+    Elif,
+    Else,
+    Fi,
 
     // // Symbols
     Semicolon, // ;

@@ -38,7 +38,7 @@ impl<R: Read> Lexer<R> {
                         return Token::Newline;
                     } else {
                         self.next_token = Some(Token::Newline);
-                        return Token::Word(token);
+                        return process_word(token);
                     }
                 }
                 ';' => {
@@ -46,12 +46,12 @@ impl<R: Read> Lexer<R> {
                         return Token::Semicolon;
                     } else {
                         self.next_token = Some(Token::Semicolon);
-                        return Token::Word(token);
+                        return process_word(token);
                     }
                 }
                 ch if ch.is_whitespace() => {
                     if !token.is_empty() {
-                        return Token::Word(token);
+                        return process_word(token);
                     }
                 }
                 ch => token.push(ch),
@@ -59,9 +59,20 @@ impl<R: Read> Lexer<R> {
         }
 
         if !token.is_empty() {
-            Token::Word(token)
+            process_word(token)
         } else {
             Token::Eof
         }
+    }
+}
+
+fn process_word(word: String) -> Token {
+    match word.as_str() {
+        "if" => Token::If,
+        "then" => Token::Then,
+        "elif" => Token::Elif,
+        "else" => Token::Else,
+        "fi" => Token::Fi,
+        _ => Token::Word(word),
     }
 }
