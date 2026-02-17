@@ -1,13 +1,13 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Token {
-    // // Keywords
+    // Keywords
     If,
     Then,
     Elif,
     Else,
     Fi,
 
-    // // Symbols
+    // Symbols
     Semicolon, // ;
     Newline,   // \n
     // Quote,     // '
