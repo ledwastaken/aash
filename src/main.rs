@@ -51,7 +51,7 @@ fn parse_execute_loop<R: Read>(reader: R) -> io::Result<()> {
     let mut lexer = Lexer::new(reader);
 
     while let Some(ast) = parse_input(&mut lexer) {
-        execute_ast(ast);
+        let _ = execute_ast(ast);
     }
 
     Ok(())
