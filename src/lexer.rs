@@ -7,6 +7,7 @@ pub use self::token::Token;
 pub struct Lexer<R: Read> {
     stream: Bytes<R>,
     next_token: Option<Token>,
+    process_command_start: bool,
 }
 
 impl<R: Read> Lexer<R> {
@@ -16,6 +17,7 @@ impl<R: Read> Lexer<R> {
         Lexer {
             stream,
             next_token: None,
+            process_command_start: false,
         }
     }
 
@@ -25,6 +27,10 @@ impl<R: Read> Lexer<R> {
         } else {
             self.process_next_token()
         }
+    }
+
+    pub fn set_command_start(&mut self) {
+        self.process_command_start = true;
     }
 
     fn process_next_token(&mut self) -> Token {
@@ -38,7 +44,7 @@ impl<R: Read> Lexer<R> {
                         return Token::Newline;
                     } else {
                         self.next_token = Some(Token::Newline);
-                        return process_word(token);
+                        return self.process_word(token);
                     }
                 }
                 ';' => {
@@ -46,12 +52,12 @@ impl<R: Read> Lexer<R> {
                         return Token::Semicolon;
                     } else {
                         self.next_token = Some(Token::Semicolon);
-                        return process_word(token);
+                        return self.process_word(token);
                     }
                 }
                 ch if ch.is_whitespace() => {
                     if !token.is_empty() {
-                        return process_word(token);
+                        return self.process_word(token);
                     }
                 }
                 ch => token.push(ch),
@@ -59,20 +65,25 @@ impl<R: Read> Lexer<R> {
         }
 
         if !token.is_empty() {
-            process_word(token)
+            self.process_word(token)
         } else {
             Token::Eof
         }
     }
-}
 
-fn process_word(word: String) -> Token {
-    match word.as_str() {
-        "if" => Token::If,
-        "then" => Token::Then,
-        "elif" => Token::Elif,
-        "else" => Token::Else,
-        "fi" => Token::Fi,
-        _ => Token::Word(word),
+    fn process_word(&mut self, word: String) -> Token {
+        if self.process_command_start {
+            self.process_command_start = false;
+            match word.as_str() {
+                "if" => Token::If,
+                "then" => Token::Then,
+                "elif" => Token::Elif,
+                "else" => Token::Else,
+                "fi" => Token::Fi,
+                _ => Token::Word(word),
+            }
+        } else {
+            Token::Word(word)
+        }
     }
 }
