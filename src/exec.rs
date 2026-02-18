@@ -12,6 +12,19 @@ pub fn execute_ast(ast: Ast) -> i32 {
             }
             code
         }
+        Ast::IfCommand {
+            condition,
+            then_branch,
+            else_branch,
+        } => {
+            if execute_ast(*condition) == 0 {
+                execute_ast(*then_branch)
+            } else if let Some(ast) = else_branch {
+                execute_ast(*ast)
+            } else {
+                1
+            }
+        }
         Ast::None => 0,
     }
 }
