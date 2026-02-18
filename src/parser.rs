@@ -119,15 +119,17 @@ fn parse_rule_if<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
                         lexer.next(),
                     ),
                     ParseResult::Success(then_branch, else_token) => {
-                        // TODO else_branch
-                        ParseResult::Success(
-                            Ast::IfCommand {
-                                condition: Box::new(condition),
-                                then_branch: Box::new(then_branch),
-                                else_branch: None,
-                            },
-                            lexer.next(),
-                        )
+                        match parse_else_clause(lexer, else_token) {
+                            ParseResult::Success(else_branch, Token::Fi) => ParseResult::Success(
+                                Ast::IfCommand {
+                                    condition: Box::new(condition),
+                                    then_branch: Box::new(then_branch),
+                                    else_branch: Some(Box::new(else_branch)),
+                                },
+                                lexer.next(),
+                            ),
+                            e => e,
+                        }
                     }
                     e => e,
                 }
@@ -142,7 +144,13 @@ fn parse_rule_if<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
     }
 }
 
-// TODO else_clause
+fn parse_else_clause<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
+    match token {
+        Token::Else => parse_compound_list(lexer, token),
+        Token::Elif => parse_compound_list(lexer, token),
+        unexpected_token => ParseResult::UnexpectedToken(unexpected_token),
+    }
+}
 
 fn parse_compound_list<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
     match parse_and_or(lexer, token) {
