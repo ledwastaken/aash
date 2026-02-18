@@ -61,12 +61,20 @@ fn parse_pipeline<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
 }
 
 fn parse_command<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
-    parse_simple_command(lexer, token)
+    let result = parse_simple_command(lexer, token);
+
+    if let ParseResult::UnexpectedToken(unexpected_token) = result {
+        parse_shell_command(lexer, unexpected_token)
+    } else {
+        result
+    }
 }
 
 fn parse_simple_command<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
     match token {
         Token::Word(word) => {
+            lexer.process_reserved_words = false;
+
             let mut words = Vec::new();
             let mut token = lexer.next();
 
@@ -74,6 +82,8 @@ fn parse_simple_command<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseRes
                 words.push(next_word);
                 token = lexer.next();
             }
+
+            lexer.process_reserved_words = true;
 
             ParseResult::Success(
                 Ast::SimpleCommand {
@@ -84,5 +94,62 @@ fn parse_simple_command<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseRes
             )
         }
         token => ParseResult::UnexpectedToken(token),
+    }
+}
+
+fn parse_shell_command<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
+    parse_rule_if(lexer, token)
+}
+
+fn parse_rule_if<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
+    if token != Token::If {
+        return ParseResult::UnexpectedToken(token);
+    } else {
+        let mut next_token = lexer.next();
+        match parse_compound_list(lexer, next_token) {
+            ParseResult::Success(condition, Token::Then) => {
+                next_token = lexer.next();
+                match parse_compound_list(lexer, next_token) {
+                    ParseResult::Success(then_branch, Token::Fi) => ParseResult::Success(
+                        Ast::IfCommand {
+                            condition: Box::new(condition),
+                            then_branch: Box::new(then_branch),
+                            else_branch: None,
+                        },
+                        lexer.next(),
+                    ),
+                    ParseResult::Success(then_branch, else_token) => {
+                        // TODO else_branch
+                        ParseResult::Success(
+                            Ast::IfCommand {
+                                condition: Box::new(condition),
+                                then_branch: Box::new(then_branch),
+                                else_branch: None,
+                            },
+                            lexer.next(),
+                        )
+                    }
+                    e => e,
+                }
+            }
+            ParseResult::Success(_, unexpected_token) => {
+                ParseResult::UnexpectedToken(unexpected_token)
+            }
+            ParseResult::UnexpectedToken(unexpected_token) => {
+                ParseResult::UnexpectedToken(unexpected_token)
+            }
+        }
+    }
+}
+
+// TODO else_clause
+
+fn parse_compound_list<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
+    match parse_and_or(lexer, token) {
+        ParseResult::Success(ast, Token::Semicolon) => {
+            let next_token = lexer.next();
+            ParseResult::Success(ast, next_token)
+        }
+        e => e,
     }
 }
