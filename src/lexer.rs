@@ -5,9 +5,10 @@ pub mod token;
 pub use self::token::Token;
 
 pub struct Lexer<R: Read> {
+    pub process_reserved_words: bool,
+
     stream: Bytes<R>,
     next_token: Option<Token>,
-    process_command_start: bool,
 }
 
 impl<R: Read> Lexer<R> {
@@ -15,9 +16,9 @@ impl<R: Read> Lexer<R> {
         let stream = reader.bytes();
 
         Lexer {
+            process_reserved_words: true,
             stream,
             next_token: None,
-            process_command_start: false,
         }
     }
 
@@ -27,10 +28,6 @@ impl<R: Read> Lexer<R> {
         } else {
             self.process_next_token()
         }
-    }
-
-    pub fn set_command_start(&mut self) {
-        self.process_command_start = true;
     }
 
     fn process_next_token(&mut self) -> Token {
@@ -72,8 +69,7 @@ impl<R: Read> Lexer<R> {
     }
 
     fn process_word(&mut self, word: String) -> Token {
-        if self.process_command_start {
-            self.process_command_start = false;
+        if self.process_reserved_words {
             match word.as_str() {
                 "if" => Token::If,
                 "then" => Token::Then,
