@@ -147,7 +147,22 @@ fn parse_rule_if<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
 fn parse_else_clause<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
     match token {
         Token::Else => parse_compound_list(lexer, token),
-        Token::Elif => parse_compound_list(lexer, token),
+        Token::Elif => match parse_compound_list(lexer, token) {
+            ParseResult::Success(elif_branch, last_token) => {
+                match parse_else_clause(lexer, last_token) {
+                    ParseResult::Success(else_branch, token2) => ParseResult::Success(
+                        Ast::IfCommand {
+                            condition: Box::new(elif_branch),
+                            then_branch: Box::new(else_branch),
+                            else_branch: None,
+                        },
+                        token2,
+                    ),
+                    e => e,
+                }
+            }
+            e => e,
+        },
         unexpected_token => ParseResult::UnexpectedToken(unexpected_token),
     }
 }
