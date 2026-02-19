@@ -200,24 +200,76 @@ fn parse_compound_list<R: Read>(lexer: &mut Lexer<R>, mut token: Token) -> Parse
         token = lexer.next();
     }
     match parse_and_or(lexer, token) {
+        // TODO factorize code below
         ParseResult::Success(ast, Token::Semicolon) => {
+            let mut compound_list = vec![ast];
             let mut next_token = lexer.next();
-
             while next_token == Token::Newline {
                 next_token = lexer.next();
             }
 
-            ParseResult::Success(ast, next_token)
+            loop {
+                match parse_and_or(lexer, next_token) {
+                    ParseResult::Success(and_or, last_token) => {
+                        compound_list.push(and_or);
+                        match last_token {
+                            Token::Semicolon => {
+                                next_token = lexer.next();
+                                while next_token == Token::Newline {
+                                    next_token = lexer.next();
+                                }
+                            }
+                            Token::Newline => {
+                                next_token = lexer.next();
+                                while next_token == Token::Newline {
+                                    next_token = lexer.next();
+                                }
+                            }
+                            _ => return ParseResult::Success(Ast::List(compound_list), last_token),
+                        }
+                    }
+                    ParseResult::UnexpectedToken(tok) => {
+                        return ParseResult::Success(Ast::List(compound_list), tok);
+                    }
+                }
+            }
         }
         ParseResult::Success(ast, Token::Newline) => {
+            let mut compound_list = vec![ast];
             let mut next_token = lexer.next();
-
             while next_token == Token::Newline {
                 next_token = lexer.next();
             }
 
-            ParseResult::Success(ast, next_token)
+            loop {
+                match parse_and_or(lexer, next_token) {
+                    ParseResult::Success(and_or, last_token) => {
+                        compound_list.push(and_or);
+                        match last_token {
+                            Token::Semicolon => {
+                                next_token = lexer.next();
+                                while next_token == Token::Newline {
+                                    next_token = lexer.next();
+                                }
+                            }
+                            Token::Newline => {
+                                next_token = lexer.next();
+                                while next_token == Token::Newline {
+                                    next_token = lexer.next();
+                                }
+                            }
+                            _ => return ParseResult::Success(Ast::List(compound_list), last_token),
+                        }
+                    }
+                    ParseResult::UnexpectedToken(tok) => {
+                        return ParseResult::Success(Ast::List(compound_list), tok);
+                    }
+                }
+            }
         }
-        e => e,
+        e => {
+            eprintln!("unexpected {:?}", e);
+            e
+        }
     }
 }
