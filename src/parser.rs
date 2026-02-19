@@ -155,7 +155,21 @@ fn parse_else_clause<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult
 fn parse_compound_list<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult {
     match parse_and_or(lexer, token) {
         ParseResult::Success(ast, Token::Semicolon) => {
-            let next_token = lexer.next();
+            let mut next_token = lexer.next();
+
+            while next_token == Token::Newline {
+                next_token = lexer.next();
+            }
+
+            ParseResult::Success(ast, next_token)
+        }
+        ParseResult::Success(ast, Token::Newline) => {
+            let mut next_token = lexer.next();
+
+            while next_token == Token::Newline {
+                next_token = lexer.next();
+            }
+
             ParseResult::Success(ast, next_token)
         }
         e => e,
