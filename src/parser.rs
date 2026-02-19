@@ -155,8 +155,41 @@ fn parse_else_clause<R: Read>(lexer: &mut Lexer<R>, token: Token) -> ParseResult
             parse_compound_list(lexer, next_token)
         }
         Token::Elif => {
-            let next_token = lexer.next();
-            parse_compound_list(lexer, next_token)
+            let mut next_token = lexer.next();
+            match parse_compound_list(lexer, next_token) {
+                ParseResult::Success(elif_condition, Token::Then) => {
+                    next_token = lexer.next();
+                    match parse_compound_list(lexer, next_token) {
+                        ParseResult::Success(elif_body, last_token) => {
+                            match parse_else_clause(lexer, last_token) {
+                                ParseResult::Success(else_clause, fi_token) => {
+                                    ParseResult::Success(
+                                        Ast::IfCommand {
+                                            condition: Box::new(elif_condition),
+                                            then_branch: Box::new(elif_body),
+                                            else_branch: Some(Box::new(else_clause)),
+                                        },
+                                        fi_token,
+                                    )
+                                }
+                                ParseResult::UnexpectedToken(fi_token) => ParseResult::Success(
+                                    Ast::IfCommand {
+                                        condition: Box::new(elif_condition),
+                                        then_branch: Box::new(elif_body),
+                                        else_branch: None,
+                                    },
+                                    fi_token,
+                                ),
+                            }
+                        }
+                        unexpected => unexpected,
+                    }
+                }
+                ParseResult::Success(_, unexpected_token) => {
+                    ParseResult::UnexpectedToken(unexpected_token)
+                }
+                unexpected => unexpected,
+            }
         }
         unexpected_token => ParseResult::UnexpectedToken(unexpected_token),
     }
