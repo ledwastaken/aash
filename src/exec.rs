@@ -1,4 +1,4 @@
-use std::process::Command;
+use std::{io::Write, process::Command};
 
 use crate::ast::Ast;
 
@@ -33,6 +33,7 @@ fn execute_simple_command(program: String, args: Vec<String>) -> i32 {
     match program.as_str() {
         "true" => 0,
         "false" => 1,
+        "echo" => echo(args),
         _ => {
             let status = Command::new(program)
                 .args(args)
@@ -45,4 +46,25 @@ fn execute_simple_command(program: String, args: Vec<String>) -> i32 {
             }
         }
     }
+}
+
+fn echo(args: Vec<String>) -> i32 {
+    let mut newline = true;
+    let mut start = 0;
+
+    if args.first().map(|s| s.as_str()) == Some("-n") {
+        newline = false;
+        start = 1;
+    }
+
+    let output = args[start..].join(" ");
+
+    if newline {
+        println!("{}", output);
+    } else {
+        print!("{}", output);
+        std::io::stdout().flush().unwrap();
+    }
+
+    0
 }
