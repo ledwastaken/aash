@@ -52,6 +52,33 @@ impl<R: Read> Lexer<R> {
                         return self.process_word(token);
                     }
                 }
+                // TODO: add an inner enum to Token::Word to differ single/double quote
+                '\'' => {
+                    enum Stop {
+                        FoundQuote(Vec<u8>),
+                        Error,
+                    }
+
+                    let bytes = self.stream.try_fold(Vec::new(), |mut acc, val| match val {
+                        Ok(b'\'') => Err(Stop::FoundQuote(acc)),
+                        Ok(byte) => {
+                            acc.push(byte);
+                            Ok(acc)
+                        }
+                        Err(_) => Err(Stop::Error),
+                    });
+
+                    return match bytes {
+                        Ok(_) => {
+                            eprintln!("unexpected EOF while looking for matching `''");
+                            Token::Eof
+                        }
+                        Err(Stop::FoundQuote(v)) => {
+                            Token::Word(String::from_utf8_lossy(&v).into_owned())
+                        }
+                        Err(Stop::Error) => Token::Eof,
+                    };
+                }
                 ch if ch.is_whitespace() => {
                     if !token.is_empty() {
                         return self.process_word(token);
