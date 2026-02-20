@@ -203,10 +203,7 @@ fn parse_compound_list<R: Read>(lexer: &mut Lexer<R>, mut token: Token) -> Parse
     match parse_and_or(lexer, token) {
         ParseResult::Success(ast, Token::Semicolon) => handle_compound_list(ast, lexer),
         ParseResult::Success(ast, Token::Newline) => handle_compound_list(ast, lexer),
-        e => {
-            eprintln!("unexpected {:?}", e);
-            e
-        }
+        e => e,
     }
 }
 
