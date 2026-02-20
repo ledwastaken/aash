@@ -30,13 +30,19 @@ pub fn execute_ast(ast: Ast) -> i32 {
 }
 
 fn execute_simple_command(program: String, args: Vec<String>) -> i32 {
-    let status = Command::new(program)
-        .args(args)
-        .status()
-        .expect("failed to execute");
+    match program.as_str() {
+        "true" => 0,
+        "false" => 1,
+        _ => {
+            let status = Command::new(program)
+                .args(args)
+                .status()
+                .expect("failed to execute");
 
-    match status.code() {
-        Some(code) => code,
-        None => 130,
+            match status.code() {
+                Some(code) => code,
+                None => 130,
+            }
+        }
     }
 }
