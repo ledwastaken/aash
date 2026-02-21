@@ -79,6 +79,15 @@ impl<R: Read> Lexer<R> {
                         Err(Stop::Error) => Token::Eof,
                     };
                 }
+                '#' => {
+                    while let Some(Ok(ch)) = self.stream.next() {
+                        if ch as char == b'\n' {
+                            break;
+                        }
+                    }
+
+                    return Token::Newline;
+                }
                 ch if ch.is_whitespace() => {
                     if !token.is_empty() {
                         return self.process_word(token);
