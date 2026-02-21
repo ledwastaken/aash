@@ -81,7 +81,7 @@ impl<R: Read> Lexer<R> {
                 }
                 '#' => {
                     while let Some(Ok(ch)) = self.stream.next() {
-                        if ch as char == b'\n' {
+                        if ch == b'\n' {
                             break;
                         }
                     }
